@@ -1,4 +1,5 @@
 import { markUpdateLaneFromFiberToRoot } from "./ReactFiberConcurrentUpdates";
+import { assign } from "shared/assign";
 
 export function initialUpdateQueue(fiber) {
     const queue = {
@@ -11,7 +12,7 @@ export function initialUpdateQueue(fiber) {
 
 export function createUpdate() {
     const update = {
-        
+
     }
 
     return update
@@ -24,10 +25,35 @@ export function enqueueUpdate(fiber, update) {
     if (pending === null) {
         update.next = update
     } else {
+        // 循环链表
         update.next = pending.next;
         pending.next = update
     }
     updateQueue.shared.peneding = update;
 
     return markUpdateLaneFromFiberToRoot(fiber)
+}
+export function processUpdateQueue(workInProgress) {
+    const queue = workInProgress.updateQueue
+    const pendingQueue = queue.shared.pending
+    if (pendingQueue !== null) {
+        queue.shared.pending = null;
+        const lastPendingUpdate = pendingQueue;
+        const firstPendingUpdate = lastPendingUpdate.next;
+
+        lastPendingUpdate.next = null;
+        let newState = workInProgress.memorizedState;
+        let update = firstPendingUpdate
+        while (update) {
+            newState = getStateFromUpdate(update, nextState);
+            update = update.next;
+        }
+        workInProgress.memorizedState = newState;
+    }
+
+}
+
+function getStateFromUpdate(update, prevState) {
+    const { payload } = update;
+    return assign({}, prevState, payload)
 }

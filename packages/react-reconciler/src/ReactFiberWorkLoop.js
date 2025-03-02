@@ -1,5 +1,6 @@
 import { scheduleCallback } from "scheduler";
 import { createWorkInProgress } from "./ReactFiber";
+import { begineWork } from "./ReactFiberBeginWork";
 let workInProgress = null;
 export function scheduleUpdateOnFiber(root) {
     // 
@@ -14,7 +15,7 @@ function performConcurrentWorkOnRoot(root) {
     // fiber构建处理
     renderRootSync(root);
 
-    root.finishedWork  = root.current.alternate;
+    root.finishedWork = root.current.alternate;
 
     // commitRoot(root) // 渲染好的挂载到页面上
 
@@ -39,7 +40,7 @@ function workLoopSync() {
 
 function preformUnitOfWork(unitOfWork) {
     const current = unitOfWork.alternate;
-    const next = begineWork(current, unitOfWork);
+    const next = begineWork(current, unitOfWork); // 返回子fiber
     unitOfWork.memorizedProps = unitOfWork.pendingProps;
     if (next === null) {
         completeUnitOfWork(unitOfWork);
