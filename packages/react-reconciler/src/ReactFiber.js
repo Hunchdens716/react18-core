@@ -26,3 +26,28 @@ export function createFiber(tag, pendingProps, key) {
 export function createHostRootFiber() {
     return createFiber(HostRoot, null, null)
 }
+
+export function createWorkInProgress(current, pendingProps) {
+    let workInProgress = current.alternate;
+
+    if (workInProgress === null) {
+        // 首次渲染
+        workInProgress = createFiber(current.tag, pendingProps, current.key);
+        workInProgress.type = current.type;
+        workInProgress.stateNode = current.stateNode;
+        workInProgress.alternate = current
+    } else {
+        workInProgress.pendingProps = pendingProps;
+        workInProgress.type = current.type;
+        workInProgress.flags = NoFlags;
+        workInProgress.subTreeFlags = NoFlags;
+    }
+
+    workInProgress.child = current.child;
+    workInProgress.memorizedProps = current.memorizedProps;
+    workInProgress.memorizedState = current.memorizedState;
+    workInProgress.updateQueue = current.updateQueue;
+    workInProgress.sibiling = current.sibiling;
+    workInProgress.index = current.index;
+    return workInProgress;
+}
