@@ -1,5 +1,5 @@
 import { MutationMask, Placement } from "./ReactFiberFlags";
-import { HostComponent, HostRoot, HostText } from "./ReactWorkTags";
+import { FunctionComponent, HostComponent, HostRoot, HostText } from "./ReactWorkTags";
 import { appendInitialChild, insertBefore } from "react-dom-bindings/src/client/ReactDOMHostConfig"
 
 function recursivelyTraverMutationEffects(root, parentFiber) {
@@ -14,6 +14,7 @@ function recursivelyTraverMutationEffects(root, parentFiber) {
 
 export function commitMutationEffectsOnFiber(finishedWork, root) {
     switch (finishedWork.tag) {
+        case FunctionComponent:
         case HostRoot:
         case HostComponent:
         case HostText: {
