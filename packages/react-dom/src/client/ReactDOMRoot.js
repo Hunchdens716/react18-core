@@ -1,10 +1,11 @@
+import { listenToAllSupportedEvents } from "react-dom-bindings/src/events/DOMPluginEventSystem";
 import { createContainer, updateContainer } from "react-reconciler/src/ReactFiberReconciler";
 
 function ReactDOMRoot(internalRoot) {
     this._internalRoot = internalRoot;
 }
 
-ReactDOMRoot.prototype.render = function(children) {
+ReactDOMRoot.prototype.render = function (children) {
     /**
      * 渲染阶段 begineWork completeWork
      * 提交阶段 commitWork 
@@ -20,5 +21,6 @@ ReactDOMRoot.prototype.render = function(children) {
 
 export function createRoot(container) {
     const root = createContainer(container);
+    listenToAllSupportedEvents(container);
     return new ReactDOMRoot(root);
 }
