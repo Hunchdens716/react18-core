@@ -1,4 +1,4 @@
-import { HostRoot } from 'react-reconciler/src/ReactWorkTags';
+import { HostComponent, HostRoot, HostText, IndeterminateComponent } from 'react-reconciler/src/ReactWorkTags';
 import { NoFlags } from 'react-reconciler/src/ReactFiberFlags';
 export function FiberNode(tag, pendingProps, key) {
     this.tag = tag; // 代表fiber节点的类型
@@ -17,7 +17,7 @@ export function FiberNode(tag, pendingProps, key) {
     this.subTreeFlags = NoFlags;
     this.alternate = null; // 双缓存用的东西
     this.index = 0; // 第几个子节点 
-}   
+}
 
 export function createFiber(tag, pendingProps, key) {
     return new FiberNode(tag, pendingProps, key)
@@ -36,6 +36,7 @@ export function createWorkInProgress(current, pendingProps) {
         workInProgress.type = current.type;
         workInProgress.stateNode = current.stateNode;
         workInProgress.alternate = current
+        current.alternate = workInProgress;
     } else {
         workInProgress.pendingProps = pendingProps;
         workInProgress.type = current.type;
@@ -50,4 +51,23 @@ export function createWorkInProgress(current, pendingProps) {
     workInProgress.sibiling = current.sibiling;
     workInProgress.index = current.index;
     return workInProgress;
+}
+
+export function createFiberFromElement(element) {
+    const { type, key, props: pendingProps } = element;
+    return createFiberFromTypeAndProps(type, key, pendingProps);
+}
+
+function createFiberFromTypeAndProps(type, key, pendingProps) {
+    let tag = IndeterminateComponent; // 暂时还不知道类型
+    if (typeof type === 'string') { // div
+        tag = HostComponent
+    }
+    const fiber = createFiber(tag, pendingProps, key);
+    fiber.type = type;
+    return fiber;
+}
+
+export function createFiberFromText(content) {
+    return createFiber(HostText, content, null);
 }

@@ -1,7 +1,9 @@
+import { HostRoot } from "./ReactWorkTags"
+
 export function markUpdateLaneFromFiberToRoot(sourceFiber) {
     let node = sourceFiber;
     let parent = sourceFiber.return;
-    while(parent !== null) {
+    while (parent !== null) {
         node = parent;
         parent = parent.return;
     }

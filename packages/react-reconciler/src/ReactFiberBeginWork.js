@@ -1,7 +1,7 @@
 import { HostComponent, HostRoot, HostText } from "./ReactWorkTags";
 import { mountChildFibers, reconcilChildFibers } from "./ReactChildFiber";
 import { processUpdateQueue } from "./ReactFiberClassUpdateQueue";
-import { shouldSetTextContent } from "react-dom-bingdings/src/client/ReactDOMHostConfig";
+import { shouldSetTextContent } from "react-dom-bindings/src/client/ReactDOMHostConfig";
 
 function reconcileChildren(current, workInProgress, nextChildren) {
     if (current === null) {
@@ -19,7 +19,7 @@ function updateHostRoot(current, workInProgress) {
     return workInProgress.child
 }
 
-function updateHostComponent() {
+function updateHostComponent(current, workInProgress) {
     const { type } = workInProgress;
     const nextProps = workInProgress.pendingProps;
     let nextChildren = nextProps.children;

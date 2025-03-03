@@ -29,7 +29,7 @@ export function enqueueUpdate(fiber, update) {
         update.next = pending.next;
         pending.next = update
     }
-    updateQueue.shared.peneding = update;
+    updateQueue.shared.pending = update;
 
     return markUpdateLaneFromFiberToRoot(fiber)
 }
@@ -45,7 +45,7 @@ export function processUpdateQueue(workInProgress) {
         let newState = workInProgress.memorizedState;
         let update = firstPendingUpdate
         while (update) {
-            newState = getStateFromUpdate(update, nextState);
+            newState = getStateFromUpdate(update, newState);
             update = update.next;
         }
         workInProgress.memorizedState = newState;

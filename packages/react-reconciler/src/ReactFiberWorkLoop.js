@@ -1,6 +1,10 @@
 import { scheduleCallback } from "scheduler";
 import { createWorkInProgress } from "./ReactFiber";
 import { begineWork } from "./ReactFiberBeginWork";
+import { completeWork } from "./ReactFiberCompleteWork";
+import { MutationMask, NoFlags } from "./ReactFiberFlags";
+import { commitMutationEffectsOnFiber } from "./ReactFiberCommitWork";
+
 let workInProgress = null;
 export function scheduleUpdateOnFiber(root) {
     // 
@@ -17,7 +21,7 @@ function performConcurrentWorkOnRoot(root) {
 
     root.finishedWork = root.current.alternate;
 
-    // commitRoot(root) // 渲染好的挂载到页面上
+    commitRoot(root) // 渲染好的挂载到页面上
 
 }
 
@@ -25,6 +29,17 @@ function renderRootSync(root) {
     prepareFreshStack(root);
 
     workLoopSync()
+}
+
+// 提交根节点
+function commitRoot(root) {
+    const { finishedWork } = root;
+    const subtreeHasEffects = (finishedWork.subtreeFlags & MutationMask) != NoFlags;
+    const rootHasEffect = (finishedWork.flags & MutationMask) != NoFlags;
+    if (subtreeHasEffects || rootHasEffect) {
+        commitMutationEffectsOnFiber(finishedWork, root);
+    }
+    root.current = finishedWork;
 }
 
 function prepareFreshStack(root) {
@@ -42,6 +57,8 @@ function preformUnitOfWork(unitOfWork) {
     const current = unitOfWork.alternate;
     const next = begineWork(current, unitOfWork); // 返回子fiber
     unitOfWork.memorizedProps = unitOfWork.pendingProps;
+
+    // workInProgress = null;
     if (next === null) {
         completeUnitOfWork(unitOfWork);
     } else {
@@ -50,5 +67,21 @@ function preformUnitOfWork(unitOfWork) {
 }
 
 function completeUnitOfWork(unitOfWork) {
-    console.log("开始complete阶段")
+    let completedWork = unitOfWork;
+    do {
+        const current = completedWork.alternate;
+        const returnFiber = completedWork.return;
+
+        completeWork(current, completedWork);
+
+        const sibilingFiber = completedWork.sibiling;
+        if (sibilingFiber !== null) {
+            // 重新回去遍历
+            workInProgress = sibilingFiber;
+            return;
+        }
+        // 去执行父节点
+        completedWork = returnFiber;
+        workInProgress = completedWork;
+    } while (completedWork !== null)
 }
