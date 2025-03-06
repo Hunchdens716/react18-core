@@ -1,4 +1,4 @@
-import assign from "shared/assign";
+// import assign from "shared/assign";
 
 // 定义两个返回特定布尔值的函数
 function functionThatReturnsTrue() {
@@ -50,7 +50,7 @@ function createSyntheticEvent(Interface) {
         return this;
     }
     // 为合成事件类的原型添加 preventDefault 和 stopPropagation 方法
-    assign(SyntheticBaseEvent.prototype, {
+    Object.assign(SyntheticBaseEvent.prototype, {
         preventDefault() {
             const event = this.nativeEvent;
             if (event.preventDefault) {

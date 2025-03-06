@@ -17,6 +17,8 @@ export function FiberNode(tag, pendingProps, key) {
     this.subTreeFlags = NoFlags;
     this.alternate = null; // 双缓存用的东西
     this.index = 0; // 第几个子节点 
+
+    this.deletions = null;
 }
 
 export function createFiber(tag, pendingProps, key) {
