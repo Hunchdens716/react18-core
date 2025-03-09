@@ -92,3 +92,40 @@ function processDispatchQueue(dispatchQueue, eventSystemFlags) {
     }
 }
 
+/**
+ * 执行分发
+ * @param {Event} event 事件
+ * @param {Function} listener 监听器函数
+ * @param {Element} currentTarget 当前目标元素
+ */
+function executeDispatch(event, listener, currentTarget) {
+    event.currentTarget = currentTarget;
+    listener(event);
+}
+
+/**
+ * 按顺序处理分发队列中的项目
+ * @param {Event} event 事件
+ * @param {Array} dispatchListeners 分发监听器列表
+ * @param {boolean} isCapturePhase 是否在捕获阶段
+ */
+function processDispatchQueueItemsInOrder(event, dispatchListeners, isCapturePhase) {
+    if (isCapturePhase) {
+        for (let i = dispatchListeners.length - 1; i >= 0; i--) {
+            const { listener, currentTarget } = dispatchListeners[i];
+            if (event.isPropagationStopped()) {
+                return;
+            }
+            executeDispatch(event, listener, currentTarget);
+        }
+    } else {
+        for (let i = 0; i < dispatchListeners.length; i++) {
+            const { listener, currentTarget } = dispatchListeners[i];
+            if (event.isPropagationStopped()) {
+                return;
+            }
+            executeDispatch(event, listener, currentTarget);
+        }
+    }
+}
+

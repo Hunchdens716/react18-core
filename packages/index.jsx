@@ -10,7 +10,7 @@ const root = createRoot(document.getElementById('root'));
 function FunctionComponent() {
     return (
         <div>
-            <div>学习</div>
+            <div onClick={() => console.log(11)}>学习</div>
         </div>
     )
 }

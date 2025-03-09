@@ -1,5 +1,5 @@
 export const allNativeEvents = new Set(); //保存的dom事件
-export function registerTowPhaseEvent(registrationName, dependencies) {
+export function registerTwoPhaseEvent(registrationName, dependencies) {
     registerDirectEvent(registrationName, dependencies);
     registerDirectEvent(registrationName + "Capture", dependencies);
 }

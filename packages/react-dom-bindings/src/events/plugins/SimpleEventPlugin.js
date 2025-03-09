@@ -1,7 +1,7 @@
 import { registerSimpleEvents, topLevelEventToReactNames } from "../DomEventProperties";
 import { IS_CAPTURE_PHASE } from "../EventSystemFlags";
 import { SyntheticMouseEvent } from "../SyntheticEvent";
-import { accumulateSinglePhaseListener } from "./DOMPluginEventSystem";
+import { accumulateSinglePhaseListener } from "../DOMPluginEventSystem";
 function extractEvents(dispatchQueue, domEventName, targetInst, nativeEvent, nativeEventTarget, eventSystemFlags, targetContainer) {
     const reactName = topLevelEventToReactNames.get(domEventName);
     let SyntheticEventCtor; //
