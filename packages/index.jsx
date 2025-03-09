@@ -1,17 +1,22 @@
 import { createRoot } from "react-dom/client";
+import { useReducer, useState, useLayoutEffect } from "./react/src";
 const root = createRoot(document.getElementById('root'));
-// let element = (
-//     <div>
-//         <div>学习</div>
-//         <div>知识</div>
-//     </div>
-
-// )
+function getAge(state, action) {
+    switch (action.type) {
+        case 'add':
+            return state + action.value
+        default:
+            return state;
+    }
+}
 function FunctionComponent() {
+    const [num, setNum] = useState(1);
+    useLayoutEffect(() => {
+        console.log(11)
+
+    })
     return (
-        <div>
-            <div onClick={() => console.log(11)}>学习</div>
-        </div>
+        <div onClick={() => setNum(num + 1)}>{num}</div>
     )
 }
 root.render(<FunctionComponent />);

@@ -38,7 +38,7 @@ function createChildReconciler(shouldTrackSideEffects) {
         // 拿到key
         const key = element.key;
         let child = currentFirstFiber;
-        while(child !== null) {
+        while (child !== null) {
             if (child.key === key) {
                 if (child.type === element.type) {
                     // 单节点 可以复用 删除剩下的fiber
@@ -64,21 +64,21 @@ function createChildReconciler(shouldTrackSideEffects) {
         newFiber.index = index;
         if (!shouldTrackSideEffects) {
             return lastPlaceIndex
-            
+
         }
         const current = newFiber.alternate;
         if (current !== null) {
             // 复用的
             const oldIndex = current.index;
-            newFiber.flags != Placement;
+            newFiber.flags |= Placement;
             if (oldIndex < lastPlaceIndex) {
-                newFiber.flags != Placement;
+                newFiber.flags |= Placement;
                 return lastPlaceIndex;
             } else {
                 return oldIndex;
             }
         } else {
-            newFiber.flags != Placement;
+            newFiber.flags |= Placement;
             return lastPlaceIndex;
         }
     }
@@ -119,10 +119,10 @@ function createChildReconciler(shouldTrackSideEffects) {
     function updateSlot(returnFiber, oldFiber, newChild) {
         const key = oldFiber !== null ? oldFiber.key : null;
         if (newChild !== null && typeof newChild === "object") {
-            switch(newChild.$$typeof) {
+            switch (newChild.$$typeof) {
                 case REACT_ELEMENT_TYPE:
                     if (newChild.key === key) {
-                       return updateElement(returnFiber, oldFiber, newChild); 
+                        return updateElement(returnFiber, oldFiber, newChild);
                     }
                 default:
                     return null;
@@ -149,7 +149,7 @@ function createChildReconciler(shouldTrackSideEffects) {
         if (current === null || current.tag !== HostText) {
             const created = createFiberFromText(textContent);
             create.return = returnFiber;
-            return created;      
+            return created;
         } else {
             const existing = useFiber(current, textContent);
             existing.return = returnFiber;
@@ -163,7 +163,7 @@ function createChildReconciler(shouldTrackSideEffects) {
             return udpateTextNode(returnFiber, matchedFiber, newChild + "");
         }
         if (typeof newChild === "object" && newChild !== null) {
-            switch(newChild.$$typeof) {
+            switch (newChild.$$typeof) {
                 case REACT_ELEMENT_TYPE: {
                     const matchedFiber = existingChildren.get(newChild.key === null ? newIndex : newChild.key) || null;
                     return updateElement(returnFiber, matchedFiber, newChild);
@@ -180,7 +180,7 @@ function createChildReconciler(shouldTrackSideEffects) {
         let oldFiber = currentFirstChild;
         let nextOldFiber = null;
         // TODO: 第一套方案
-        for(; oldFiber !== null && newIndex < newChildren.length; newIndex++) {
+        for (; oldFiber !== null && newIndex < newChildren.length; newIndex++) {
             nextOldFiber = oldFiber.sibiling;
             const newFiber = updateSlot(returnFiber, oldFiber, newChildren[newIndex]);
             // key不相同终止
@@ -222,7 +222,7 @@ function createChildReconciler(shouldTrackSideEffects) {
         // TODO 第三套方案 剩下的老节点还没有经过比较，且新fiber还没有创建完成
         const existingChildren = mapRemainingChildren(returnFiber, oldFiber);
 
-        for (;newIndex < newChildren.length; newIndex++) {
+        for (; newIndex < newChildren.length; newIndex++) {
             const newFiber = updateFromMap(existingChildren, returnFiber, newIndex, newChildren[newIndex]);
             if (newFiber !== null) {
                 if (shouldTrackSideEffects) {

@@ -32,6 +32,12 @@ function updateHostComponent(current, workInProgress) {
     return workInProgress.child;
 }
 
+export function updateFunctionComponent(current, workInProgress, Component, nextProps) {
+    const nextChildren = renderWithHooks(current, workInProgress, Component, nextProps);
+    reconcileChildren(current, workInProgress, nextChildren);
+    return workInProgress.child;
+}
+
 function mountIndeterminateComponent(current, workInProgress, Component) {
     const props = workInProgress.pendingProps;
     const value = renderWithHooks(current, workInProgress, Component, props);
@@ -48,6 +54,10 @@ export function begineWork(current, workInProgress) {
             return updateHostRoot(current, workInProgress);
         case HostComponent:
             return updateHostComponent(current, workInProgress);
+        case FunctionComponent:
+            const Component = workInProgress.type;
+            const nextProps = workInProgress.pendingProps;
+            return updateFunctionComponent(current, workInProgress, Component, nextProps);
         case HostText:
             return null;
         default:

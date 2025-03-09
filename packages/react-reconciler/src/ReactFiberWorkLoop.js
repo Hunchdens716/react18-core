@@ -2,10 +2,18 @@ import { scheduleCallback } from "scheduler";
 import { createWorkInProgress } from "./ReactFiber";
 import { begineWork } from "./ReactFiberBeginWork";
 import { completeWork } from "./ReactFiberCompleteWork";
-import { MutationMask, NoFlags } from "./ReactFiberFlags";
-import { commitMutationEffectsOnFiber } from "./ReactFiberCommitWork";
+import { MutationMask, NoFlags, Passive } from "./ReactFiberFlags";
+import {
+    commitMutationEffectsOnFiber,
+    commitPassiveMountEffects,
+    commitPassiveUnmountEffects,
+    commitLayoutEffects
+} from "./ReactFiberCommitWork";
+import { finishQueueingConcurrentUpdates } from "./ReactFiberConcurrentUpdates";
 
 let workInProgress = null;
+let rootDoesHavePassiveEffect = false;
+let rootWithPendingPassiveEffects = null;
 export function scheduleUpdateOnFiber(root) {
     // 
     ensureRootIsScheduled(root);
@@ -34,17 +42,39 @@ function renderRootSync(root) {
 // 提交根节点
 function commitRoot(root) {
     const { finishedWork } = root;
+
+    if ((finishedWork.subtreeFlags & Passive) !== NoFlags || finishedWork.flags & Passive !== NoFlags) {
+        if (!rootDoesHavePassiveEffect) {
+            rootDoesHavePassiveEffect = true;
+            scheduleCallback(flushPassiveEffect);
+        }
+    }
+
     const subtreeHasEffects = (finishedWork.subtreeFlags & MutationMask) != NoFlags;
     const rootHasEffect = (finishedWork.flags & MutationMask) != NoFlags;
     if (subtreeHasEffects || rootHasEffect) {
         commitMutationEffectsOnFiber(finishedWork, root);
+        commitLayoutEffects(finishedWork, root);
+        if (rootDoesHavePassiveEffect) {
+            rootDoesHavePassiveEffect = false;
+            rootWithPendingPassiveEffects = root;
+        }
     }
     root.current = finishedWork;
+}
+
+function flushPassiveEffect() {
+    if (rootWithPendingPassiveEffects !== null) {
+        const root = rootWithPendingPassiveEffects;
+        commitPassiveUnmountEffects(root, root.current);
+        commitPassiveMountEffects(root, root.current);
+    }
 }
 
 function prepareFreshStack(root) {
     // 创建alternate fiber树
     workInProgress = createWorkInProgress(root.current, null);
+    finishQueueingConcurrentUpdates();
 }
 
 function workLoopSync() {
