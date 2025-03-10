@@ -1,4 +1,11 @@
-import { scheduleCallback } from "scheduler";
+import { 
+    cheduleCallback as Scheduler_scheduleCallback,
+    shouldYield,
+    ImmediatePriority as ImmediateSchedulerPriority,
+    UserBlockingPriority as UserBlockingSchedulerPriority,
+    NormalPriority as NormalSchedulerPriority,
+    IdlePriority as IdleSchedulerPriority,
+} from "scheduler";
 import { createWorkInProgress } from "./ReactFiber";
 import { begineWork } from "./ReactFiberBeginWork";
 import { completeWork } from "./ReactFiberCompleteWork";
@@ -10,22 +17,57 @@ import {
     commitLayoutEffects
 } from "./ReactFiberCommitWork";
 import { finishQueueingConcurrentUpdates } from "./ReactFiberConcurrentUpdates";
+import { getCurrentUpdatePriority } from "./ReactEventPriorities";
+import { getHighestPriorityLanes, getNextLanes, markRootUpdated, NoLane, NoLanes, SyncLane } from "./ReactFiberLane";
+
+let workInProgressRoot = null;
+let workInProgressRenderLanes = NoLanes;
 
 let workInProgress = null;
 let rootDoesHavePassiveEffect = false;
 let rootWithPendingPassiveEffects = null;
-export function scheduleUpdateOnFiber(root) {
-    // 
+export function scheduleUpdateOnFiber(root, fiber, lane) {
+    markRootUpdated(root, lane);
     ensureRootIsScheduled(root);
 }
 
 function ensureRootIsScheduled(root) {
-    scheduleCallback(performConcurrentWorkOnRoot.bind(null, root));
+    const nexLanes = getNextLanes(root);
+    let newCallbackPriority = getHighestPriorityLanes(nexLanes);
+    if (newCallbackPriority === SyncLane) {
+
+    } else {
+        let schedulerPriorityLevel;
+        switch (lanesToEventPriority(nextLanes)) {
+          case DiscreteEventPriority:
+            schedulerPriorityLevel = ImmediateSchedulerPriority;
+            break;
+          case ContinuousEventPriority:
+            schedulerPriorityLevel = UserBlockingSchedulerPriority;
+            break;
+          case DefaultEventPriority:
+            schedulerPriorityLevel = NormalSchedulerPriority;
+            break;
+          case IdleEventPriority:
+            schedulerPriorityLevel = IdleSchedulerPriority;
+            break;
+          default:
+            schedulerPriorityLevel = NormalSchedulerPriority;
+            break;
+        }
+        scheduleCallback(schdulerPriorityLevel, performConcurrentWorkOnRoot.bind(null, root));
+    }
+    // scheduleCallback(performConcurrentWorkOnRoot.bind(null, root));
+    
 }
 
-function performConcurrentWorkOnRoot(root) {
+function performConcurrentWorkOnRoot(root, timeout) {
+    const nextLanes = getNextLanes(root, NoLanes);
+    if (nextLanes === NoLanes) {
+        return null
+    }
     // fiber构建处理
-    renderRootSync(root);
+    renderRootSync(root, nextLanes);
 
     root.finishedWork = root.current.alternate;
 
@@ -33,8 +75,8 @@ function performConcurrentWorkOnRoot(root) {
 
 }
 
-function renderRootSync(root) {
-    prepareFreshStack(root);
+function renderRootSync(root, renderLanes) {
+    prepareFreshStack(root, renderLanes);
 
     workLoopSync()
 }
@@ -46,7 +88,8 @@ function commitRoot(root) {
     if ((finishedWork.subtreeFlags & Passive) !== NoFlags || finishedWork.flags & Passive !== NoFlags) {
         if (!rootDoesHavePassiveEffect) {
             rootDoesHavePassiveEffect = true;
-            scheduleCallback(flushPassiveEffect);
+            // scheduleCallback(flushPassiveEffect);
+            scheduleCallback(NormalSchedulerPriority, flushPassiveEffect);
         }
     }
 
@@ -71,9 +114,13 @@ function flushPassiveEffect() {
     }
 }
 
-function prepareFreshStack(root) {
+function prepareFreshStack(root, renderLanes) {
+    if (root !== workInProgressRoot || workInProgressRenderLanes !== renderLanes) {
+        workInProgress = createWorkInProgress(root.current, null);
+    }
     // 创建alternate fiber树
-    workInProgress = createWorkInProgress(root.current, null);
+    // workInProgress = createWorkInProgress(root.current, null);
+    workInProgressRenderLanes = renderLanes;
     finishQueueingConcurrentUpdates();
 }
 
@@ -114,4 +161,14 @@ function completeUnitOfWork(unitOfWork) {
         completedWork = returnFiber;
         workInProgress = completedWork;
     } while (completedWork !== null)
+}
+
+export function requestUpdateLane() {
+    const updateLane = getCurrentUpdatePriority();
+    if (updateLane !== NoLane) {
+        return updateLane;
+    }
+
+    const eventLane = getCurrentEventPriority(); 
+    return eventLane;
 }

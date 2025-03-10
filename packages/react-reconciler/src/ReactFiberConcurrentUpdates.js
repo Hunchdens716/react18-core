@@ -3,10 +3,25 @@ import { HostRoot } from "./ReactWorkTags"
 const concurrentQueue = [];
 let concurrentQueuesIndex = 0;
 
-function enqueueUpdate(fiber, queue, update) {
+function enqueueUpdate(fiber, queue, update, lane) {
     concurrentQueue[concurrentQueuesIndex++] = fiber;
     concurrentQueue[concurrentQueuesIndex++] = queue;
     concurrentQueue[concurrentQueuesIndex++] = update;
+    concurrentQueue[concurrentQueuesIndex++] = lane;
+}
+
+
+/**
+ * 将类组件更新加入并发队列
+ * @param {Object} fiber - fiber对象
+ * @param {Object} queue - 更新队列
+ * @param {Object} update - 更新对象
+ * @param {number} lane - 车道信息
+ * @returns {Object|null} 更新的fiber的根，如果不存在则返回null
+ */
+export function enqueueConcurrentClassUpdate(fiber, queue, update, lane) {
+    enqueueUpdate(fiber, queue, update, lane);
+    return getRootForUpdatedFiber(fiber);
 }
 
 export function enqueueConcurrentHookUpdate(fiber, queue, update) {

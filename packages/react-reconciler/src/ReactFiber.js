@@ -1,5 +1,6 @@
 import { HostComponent, HostRoot, HostText, IndeterminateComponent } from 'react-reconciler/src/ReactWorkTags';
 import { NoFlags } from 'react-reconciler/src/ReactFiberFlags';
+import { NoLanes } from './ReactFiberLane';
 export function FiberNode(tag, pendingProps, key) {
     this.tag = tag; // 代表fiber节点的类型
     this.key = key;
@@ -18,6 +19,7 @@ export function FiberNode(tag, pendingProps, key) {
     this.alternate = null; // 双缓存用的东西
     this.index = 0; // 第几个子节点 
     this.child = null;
+    this.lanes = NoLanes;
 
     this.deletions = null;
 }

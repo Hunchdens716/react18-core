@@ -1,9 +1,11 @@
 import { createHostRootFiber } from "./ReactFiber";
 import { initialUpdateQueue } from "./ReactFiberClassUpdateQueue";
+import { NoLanes } from "./ReactFiberLane";
 
 function FiberRootNode(containerInfo) {
     // 整个应用的根
     this.containerInfo = containerInfo
+    this.pendingLanes = NoLanes;
 }
 
 
